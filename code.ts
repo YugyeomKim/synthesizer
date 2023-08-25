@@ -1,4 +1,4 @@
-const RESULT_NUM = 100
+const RESULT_NUM = 1000
 const CLASS_LIST = ["filledButton", "outlinedButton"]
 
 const generateRandomString = (length: number) => {
@@ -19,7 +19,7 @@ const hsl = (h: number, s: number, l: number, a: number = 100) => `hsl(${h} ${s}
 
 // }
 
-const addComponent = async (frame: FrameNode, classList: string[], darkMode: boolean = true) => {
+const addComponent = async (frame: FrameNode, classList: string[], darkMode: boolean = false) => {
   const className = classList[Math.floor(Math.random() * classList.length)]
   const fromLabeled = Math.random() < 0.5 ? true : false
 
@@ -172,7 +172,7 @@ const addComponent = async (frame: FrameNode, classList: string[], darkMode: boo
   }
 }
 
-const addComponents = async (frame: FrameNode, classList: string[], darkMode: boolean = true) => {
+const addComponents = async (frame: FrameNode, classList: string[], darkMode: boolean = false) => {
   const splitFrameRandomNumber = Math.random()
   if (splitFrameRandomNumber <= 0.25) {
     await addComponent(frame, classList, darkMode)
