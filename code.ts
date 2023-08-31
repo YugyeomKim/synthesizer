@@ -1,3 +1,5 @@
+figma.skipInvisibleInstanceChildren = true;
+
 const RESULT_NUM = 1000
 const CLASS_LIST = ["filledButton", "outlinedButton"]
 
@@ -21,7 +23,8 @@ const hsl = (h: number, s: number, l: number, a: number = 100) => `hsl(${h} ${s}
 
 const addComponent = async (frame: FrameNode, classList: string[], darkMode: boolean = false) => {
   const className = classList[Math.floor(Math.random() * classList.length)]
-  const fromLabeled = Math.random() < 0.5 ? true : false
+  // const fromLabeled = Math.random() < 0.5 ? true : false
+  const fromLabeled = false
 
   // Is there a page named "Synthetic Pallete"?
   let syntheticPallete = figma.root.findChild(page => page.name === "Synthetic Pallete")
@@ -44,20 +47,21 @@ const addComponent = async (frame: FrameNode, classList: string[], darkMode: boo
     return
   }
 
-  if (
-    !fromLabeled &&
-    darkMode
-  ) {
-    componentSection = componentSection.findChild((section) => section.type === "SECTION" && section.name === "darkMode")
-  }
+  // // From Dark Mode?
+  // if (
+  //   !fromLabeled &&
+  //   darkMode
+  // ) {
+  //   componentSection = componentSection.findChild((section) => section.type === "SECTION" && section.name === "darkMode")
+  // }
 
-  if (
-    !componentSection ||
-    componentSection.type !== "SECTION"
-  ) {
-    figma.closePlugin("Component section not found")
-    return
-  }
+  // if (
+  //   !componentSection ||
+  //   componentSection.type !== "SECTION"
+  // ) {
+  //   figma.closePlugin("Component section not found")
+  //   return
+  // }
 
   // Get a component
   const componentRandomNumber = Math.floor(Math.random() * componentSection.children.length)
@@ -74,6 +78,7 @@ const addComponent = async (frame: FrameNode, classList: string[], darkMode: boo
 
   // Change the text
   if (
+    Math.random() < 0.9 &&
     newComponent.type === "INSTANCE" ||
     newComponent.type === "COMPONENT" ||
     newComponent.type === "FRAME" ||
@@ -81,7 +86,12 @@ const addComponent = async (frame: FrameNode, classList: string[], darkMode: boo
   ) {
     const textNodes = newComponent.findAll((node) => node.type === "TEXT")
     for (const text of textNodes) {
-      if (text.type !== "TEXT" || text.fills === figma.mixed || text.hasMissingFont) return
+      if (
+        text.type !== "TEXT" || 
+        text.hasMissingFont ||
+        text.fills === figma.mixed || 
+        !text.fills.length
+      ) continue
 
       await Promise.all(
         text.getRangeAllFontNames(0, text.characters.length)
@@ -89,9 +99,9 @@ const addComponent = async (frame: FrameNode, classList: string[], darkMode: boo
       )
 
       text.characters = generateRandomString(text.characters.length)
-      // console.log(text.characters);
 
       const a = text.fills[0].opacity ? text.fills[0].opacity : 1
+      // const a = 1
       const color = darkMode ?
         hsl(Math.random() * 360, Math.random() * 100, 25 + Math.random() * 75, a * 100) :
         hsl(Math.random() * 360, Math.random() * 100, Math.random() * 80, a * 100)
@@ -104,7 +114,10 @@ const addComponent = async (frame: FrameNode, classList: string[], darkMode: boo
   newComponent.y = Math.random() * (frame.height - newComponent.height)
 
   // Change the color for outlined button
-  if (className === "outlinedButton") {
+  if (
+    Math.random() < 0.9 &&
+    className === "outlinedButton"
+  ) {
     if (
       "strokes" in newComponent &&
       newComponent.strokes.length
@@ -120,7 +133,12 @@ const addComponent = async (frame: FrameNode, classList: string[], darkMode: boo
       // If the component doesn't have strokes
       if (newComponent.type === "GROUP") {
         const rect = newComponent.findOne((node) => node.type === "RECTANGLE")
-        if (rect && rect.type === "RECTANGLE") {
+        if (
+          rect && 
+          rect.type === "RECTANGLE" &&
+          "strokes" in rect &&
+          rect.strokes.length
+        ) {
           const a = rect.strokes[0].opacity ? rect.strokes[0].opacity : 1
           const color = darkMode ?
             hsl(Math.random() * 360, Math.random() * 100, Math.random() * 80, a * 100) :
@@ -129,8 +147,24 @@ const addComponent = async (frame: FrameNode, classList: string[], darkMode: boo
         }
       }
     }
-  } else if (className === "filledButton") {
+  } else if (
+    Math.random() < 0.9 &&
+    className === "filledButton"
+  ) {
     // Change the color for filled button
+    if (
+      "strokes" in newComponent &&
+      newComponent.strokes.length
+    ) {
+      // If the component has strokes
+      const a = newComponent.strokes[0].opacity ? newComponent.strokes[0].opacity : 1
+      const color = darkMode ?
+        hsl(Math.random() * 360, Math.random() * 100, 25 + Math.random() * 75, a * 100) :
+        hsl(Math.random() * 360, Math.random() * 100, Math.random() * 80, a * 100)
+
+      newComponent.strokes = [figma.util.solidPaint(color)]
+    }
+    
     if (
       "fills" in newComponent &&
       newComponent.fills !== figma.mixed &&
@@ -138,6 +172,7 @@ const addComponent = async (frame: FrameNode, classList: string[], darkMode: boo
     ) {
       // If the component has fills
       const a = newComponent.fills[0].opacity ? newComponent.fills[0].opacity : 1
+      // const a = 1
       const color = darkMode ?
         hsl(Math.random() * 360, Math.random() * 100, 25 + Math.random() * 75, a * 100) :
         hsl(Math.random() * 360, Math.random() * 100, Math.random() * 80, a * 100)
@@ -161,8 +196,9 @@ const addComponent = async (frame: FrameNode, classList: string[], darkMode: boo
           node.fills === figma.mixed ||
           !node.fills.length
         ) return
-
+        console.log(node.name)
         const a = node.fills[0].opacity ? node.fills[0].opacity : 1
+        // const a = 1
         const color = darkMode ?
           hsl(Math.random() * 360, Math.random() * 100, 25 + Math.random() * 75, a * 100) :
           hsl(Math.random() * 360, Math.random() * 100, Math.random() * 80, a * 100)

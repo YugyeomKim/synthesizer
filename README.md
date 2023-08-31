@@ -1,1 +1,2 @@
-TODO: color adjusting of components compared to background
+TODO
+- color adjusting of components compared to background
