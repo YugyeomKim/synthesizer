@@ -1,7 +1,65 @@
 figma.skipInvisibleInstanceChildren = true;
 
 const RESULT_NUM = 1000
-const CLASS_LIST = ["filledButton", "outlinedButton"]
+const CLASS_LIST: string[] = ["filledButton", "outlinedButton"]
+const FRAME_SIZE: { [key: string]: number[] } = {
+  "iPhone 14 Plus": [428, 926],
+  "iPhone 14 Pro Max": [430, 932],
+  "iPhone 14 Pro": [393, 852],
+  "iPhone 14": [390, 844],
+  "iPhone 13 Pro Max": [428, 926],
+  "iPhone 13 Pro": [390, 844],
+  "iPhone 13": [390, 844],
+  "iPhone 13 mini": [375, 812],
+  "iPhone SE": [320, 568],
+  "iPhone 8 Plus": [414, 736],
+  "iPhone 8": [375, 667],
+  "Android Small": [360, 640],
+  "Android Large": [360, 800]
+}
+
+const CLASSES_PROBOBILITY: { [key: string]: number } = {
+  statusBar: 0.5,
+  homeIndicator: 0.5,
+  TextButton: 0,
+  badge: 0,
+  keyboard: 0,
+  text: 0,
+  imageRectangle: 0,
+  imageEllipse: 0,
+  rectangle: 0,
+  ellipse: 0,
+  textField: 0,
+  searchField: 0,
+  filledButton: 0,
+  outlinedButton: 0,
+  iconButton: 0,
+  filledIconButton: 0,
+  outlinedIconButton: 0,
+  icon: 0,
+  segmentedButton: 0,
+  switch: 0,
+  topAppBar: 0,
+  chip: 0,
+  list: 0,
+  row: 0,
+  card: 0,
+  carousel: 0,
+  grid: 0,
+  tabBar: 0,
+  tab: 0,
+  bottomNavigation: 0,
+  backDrop: 0,
+  banner: 0,
+  modal: 0,
+  tooltip: 0,
+  radioButton: 0,
+  datePicker: 0,
+  timePicker: 0,
+  quantityPicker: 0,
+  bottomAppBar: 0,
+  other: 0,
+}
 
 const generateRandomString = (length: number) => {
   let result = '';
@@ -87,9 +145,9 @@ const addComponent = async (frame: FrameNode, classList: string[], darkMode: boo
     const textNodes = newComponent.findAll((node) => node.type === "TEXT")
     for (const text of textNodes) {
       if (
-        text.type !== "TEXT" || 
+        text.type !== "TEXT" ||
         text.hasMissingFont ||
-        text.fills === figma.mixed || 
+        text.fills === figma.mixed ||
         !text.fills.length
       ) continue
 
@@ -134,7 +192,7 @@ const addComponent = async (frame: FrameNode, classList: string[], darkMode: boo
       if (newComponent.type === "GROUP") {
         const rect = newComponent.findOne((node) => node.type === "RECTANGLE")
         if (
-          rect && 
+          rect &&
           rect.type === "RECTANGLE" &&
           "strokes" in rect &&
           rect.strokes.length
@@ -164,7 +222,7 @@ const addComponent = async (frame: FrameNode, classList: string[], darkMode: boo
 
       newComponent.strokes = [figma.util.solidPaint(color)]
     }
-    
+
     if (
       "fills" in newComponent &&
       newComponent.fills !== figma.mixed &&
@@ -208,7 +266,19 @@ const addComponent = async (frame: FrameNode, classList: string[], darkMode: boo
   }
 }
 
+// const addStatusBar = async (frame: FrameNode, classList: string[], darkMode: boolean = false) => {
+//   const statusBar = 
+// }
+
+// const addHomeIndicator = async (frame: FrameNode, classList: string[], darkMode: boolean = false) => {}
+
 const addComponents = async (frame: FrameNode, classList: string[], darkMode: boolean = false) => {
+  // if (Math.random() < CLASSES_PROBOBILITY["homeIndicator"]) {
+  //   await addStatusBar(frame, classList, darkMode)
+  //   await addHomeIndicator(frame, classList, darkMode)
+  // }
+
+
   const splitFrameRandomNumber = Math.random()
   if (splitFrameRandomNumber <= 0.25) {
     await addComponent(frame, classList, darkMode)
@@ -261,12 +331,36 @@ async function main() {
 
   let frameX = 0
   let frameY = 0
+  let maxFrameY = 0
   for (let i = 0; i < RESULT_NUM; i++) {
     const newFrame = figma.createFrame()
     newFrame.x = frameX
     newFrame.y = frameY
-    newFrame.resize(390, 844)
+
+    const randomFrameSize = JSON.parse(JSON.stringify(
+      FRAME_SIZE[Object.keys(FRAME_SIZE)[Math.floor(Math.random() * Object.keys(FRAME_SIZE).length)]]
+    ))
+    console.log("1.", randomFrameSize);
+
+    if (Math.random() < 0.1) {
+      randomFrameSize[1] = randomFrameSize[1] * 2
+    } else if (Math.random() < 0.05) {
+      randomFrameSize[1] = randomFrameSize[1] * 3
+    }
+    console.log("2.", randomFrameSize);
+    newFrame.resize(randomFrameSize[0], randomFrameSize[1])
     newFrame.name = `Frame ${i + 1}`
+    console.log("3.", newFrame.width, newFrame.height);
+
+    if (frameY + newFrame.height > maxFrameY) {
+      maxFrameY = frameY + newFrame.height
+    }
+
+    frameX += newFrame.width + 10
+    if ((i + 1) % 50 === 0) {
+      frameX = 0
+      frameY = maxFrameY + 10
+    }
 
     const frameColorRandomNumber = Math.random()
     if (frameColorRandomNumber <= 0.6) {
@@ -279,15 +373,9 @@ async function main() {
       newFrame.fills = [figma.util.solidPaint(hsl(Math.random() * 360, 100, 97))]
       await addComponents(newFrame, CLASS_LIST)
     }
-
-    frameX += 410
-    if (frameX >= 4100) {
-      frameX = 0
-      frameY += 864
-    }
   }
 
-  figma.closePlugin()
+  figma.closePlugin("Done🥰")
 }
 
 main()
