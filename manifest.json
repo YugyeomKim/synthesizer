@@ -9,9 +9,20 @@
     "figma"
   ],
   "ui": "ui.html",
+  "menu": [
+    {
+      "name": "Synthesize",
+      "command": "synthesize"
+    },
+    {
+      "name": "Replacing",
+      "command": "replacing"
+    }
+  ],
   "networkAccess": {
     "allowedDomains": [
-      "none"
+      "https://random.imagecdn.app",
+      "https://picsum.photos"
     ]
   }
 }

@@ -1,1 +1,26 @@
-edward...
+<html>
+
+<body>
+    <h1 id="headline1"></h1>
+    <input type="button" value="Synthesize!" id="synthesize-button">
+    <input type="button" value="Reset." id="reset-button">
+</body>
+
+<script>
+    var headline1 = document.getElementById("headline1");
+    headline1.innerHTML = "Hello, world!";
+
+    onmessage = (event) => {
+        headline1.innerHTML = `You Selected ${event.data.pluginMessage.selection}`;
+    };
+
+    document.getElementById("synthesize-button").onclick = function() {
+        parent.postMessage({ pluginMessage: { type: 'substitute' } }, '*');
+    };
+
+    document.getElementById("reset-button").onclick = function() {
+        parent.postMessage({ pluginMessage: { type: 'reset' } }, '*');
+    };
+</script>
+
+</html>
